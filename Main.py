@@ -1,7 +1,7 @@
 print(
 	"""
 	PingPong 1.0.0
-	Copyright (c) 2021 Jonathan Ford
+	Copyright (c) 2021 there-are-higher-beings
 	Licensed under the GNU AGPL 3.0
 	"""
 )
