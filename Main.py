@@ -71,6 +71,7 @@ async def msg(message):
 			randomMember = random.choice(channel1.guild.members)
 			message1 = await channel1.send(f'{randomMember.mention} ' + random.choice(pinger))
 			await asyncio.sleep(2)
+			print(f"pinged {randomMember} in *{channel1}* in '{guild}'")
 			await message1.delete()
 			await asyncio.sleep(timeout)
 
