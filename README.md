@@ -1,4 +1,4 @@
-# PingPong
+# PINGPAIN
 Simple discord bot to ping random people in a random channel at a random time
 
 link to add to your server:
