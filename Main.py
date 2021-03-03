@@ -33,8 +33,8 @@ ping_responses = [
 	'really?',
 	'can you not?',
 	'bruh wth',
-	'i will kick you',
-	]
+	'i will kick you'
+]
 
 #message to send when running
 @client.event
@@ -58,7 +58,6 @@ async def msg(message):
 	
 	#responding if the bot ever gets pinged (see variables)
 	if client.user.mentioned_in(message):
-		time.sleep(0.5)
 		await message.channel.send(random.choice(ping_responses))
 	
 	#main ping function triggered with p[ping
