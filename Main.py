@@ -1,6 +1,6 @@
 print(
 	"""
-	PingPong 1.0.0
+	PINGPAIN 1.0.0
 	Copyright (c) 2021 c:/#4617
 	Licensed under the GNU AGPL 3.0
 	"""
