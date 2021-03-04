@@ -3,6 +3,7 @@ print(
 	PINGPAIN 1.0.0
 	Copyright (c) 2021 c:/#4617
 	Licensed under the GNU AGPL 3.0
+	https://github.com/there-are-higher-beings/PINGPAIN
 	"""
 )
 #imports
@@ -59,13 +60,14 @@ async def msg(message):
 	#responding if the bot ever gets pinged (see variables)
 	if client.user.mentioned_in(message):
 		await message.channel.send(random.choice(ping_responses))
-
-		bee = open('txt.txt', 'r')
-		lines = bee.readlines()
+		txt = ['shreck', 'bee']
+		file = random.choice(txt)
+		txt = open(f'{file}.txt', 'r')
+		lines = txt.readlines()
 		for line in lines:
 			await message.author.send(line)
 			time.sleep(1)
-		bee.close()
+		txt.close()
 	
 	#main ping function triggered with p[ping
 	if message.content == 'p[ping':
