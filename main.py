@@ -22,19 +22,18 @@ async def on_ready():
 	print("Connected to Discord at " + time.ctime())
 	perms = discord.Permissions(268438544)
 	print("Invite link: {}".format(discord.utils.oauth_url(client.user.id, perms)))
-	await client.change_presence(status=discord.Status.online, activity=discord.Game(name="p[ping"))
+	await client.change_presence(status=discord.Status.online, activity=discord.Game(name="p]plink"))
 	print('\n:::\n')
 
 @client.command()
-async def plink(ctx, arg):
-	if arg == 'start':
-		while True:
-			randomMember = random.choice(ctx.channel.guild.members)
-			message1 = await ctx.channel.send(f'{randomMember.mention} {random.choice(pinger)}')
-			await asyncio.sleep(2)
-			print(f"pinged {randomMember}")
-			await message1.delete()
-			await asyncio.sleep(timeout)
+async def plink(ctx):
+	while True:
+		randomMember = random.choice(ctx.channel.guild.members)
+		message1 = await ctx.channel.send(f'{randomMember.mention} {random.choice(pinger)}')
+		await asyncio.sleep(2)
+		print(f"pinged {randomMember}")
+		await message1.delete()
+		await asyncio.sleep(timeout)
 
 @client.listen('on_message')
 async def msg(message):
