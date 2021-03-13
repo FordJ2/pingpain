@@ -1,63 +1,46 @@
-print(
-	"""
-	PINGPAIN 1.0.0
+print("""
+	pingPAIN 1.0.0
 	Copyright (c) 2021 .wncry#4617
 	Licensed under the GNU AGPL 3.0
-	https://github.com/there-are-higher-beings/PINGPAIN
-	"""
-)
-#imports
+	https://github.com/there-are-higher-beings/pingPAIN
+	""")
 import asyncio
 import discord
 import time
 import random
 from discord.ext import commands
-from discord import utils
-from discord.utils import get
+from keep_alive import keep_alive
 
-#bunch of things to include to make the code run
-intents = discord.Intents().all()  
-client = commands.Bot(command_prefix = ["p]"], intents=intents)
+intents = discord.Intents().all()
+client = commands.Bot(command_prefix=["p]"], intents=intents)
+pinger = ['hehe', 'muahahahah', 'suffer mortal', 'sue me', '>:D']
+ping_responses = ['stop', 'stap', 'please..', 'really?', 'can you not?', 'bruh wth', 'i will kick you']
+timeout = 10
 
-#bunch of variables
-pinger = [
-	'hehe',
-	'muahahahah',
-	'suffer mortal',
-	'sue me',
-	'>:D'
-]
-ping_responses = [
-	'stop',
-	'stap',
-	'please..',
-	'really?',
-	'can you not?',
-	'bruh wth',
-	'i will kick you'
-]
-
-#message to send when running
 @client.event
 async def on_ready():
 	print("Connected to Discord at " + time.ctime())
 	perms = discord.Permissions(268438544)
 	print("Invite link: {}".format(discord.utils.oauth_url(client.user.id, perms)))
-		
-	#what the bot is doing: playing 𝙋𝙞𝙣𝙜 𝙋𝙤𝙣𝙜
-	await client.change_presence(status=discord.Status.idle, activity=discord.Game(name="Ping Pong"))
-	print('')
-	print(':::')
-	print('')
+	await client.change_presence(status=discord.Status.online, activity=discord.Game(name="p[ping"))
+	print('\n:::\n')
 
-#a function to listen to sent messages
+@client.command()
+async def plink(ctx, arg):
+	if arg == 'start':
+		while True:
+			randomMember = random.choice(ctx.channel.guild.members)
+			message1 = await ctx.channel.send(f'{randomMember.mention} {random.choice(pinger)}')
+			await asyncio.sleep(2)
+			print(f"pinged {randomMember}")
+			await message1.delete()
+			await asyncio.sleep(timeout)
+
 @client.listen('on_message')
 async def msg(message):
-	#ignores the msg if its sent by a bot, so that there isnt an infinite loop of messages (could be fun if its taken out tho tbh)
+	#msg = message.content.lower()
 	if message.author == client.user:
 		return
-	
-	#responding if the bot ever gets pinged (see variables)
 	if client.user.mentioned_in(message):
 		await message.channel.send(random.choice(ping_responses))
 		txt = ['shreck', 'bee']
@@ -66,22 +49,7 @@ async def msg(message):
 		lines = txt.readlines()
 		for line in lines:
 			await message.author.send(line)
-			time.sleep(1)
+			await asyncio.sleep(1)
 		txt.close()
-	
-	#main ping function triggered with p[ping
-	if message.content == 'p[ping':
-		#change the 5 to however many minutes you want between ping cycles
-		timeout = 60*5
-		while True:
-			guild = client.guilds[0]
-			channel1 = random.choice(guild.text_channels)
-			randomMember = random.choice(channel1.guild.members)
-			message1 = await channel1.send(f'{randomMember.mention} ' + random.choice(pinger))
-			await asyncio.sleep(2)
-			print(f"pinged {randomMember} in *{channel1}* in '{guild}'")
-			await message1.delete()
-			await asyncio.sleep(timeout)
 
-#replace TOKEN with your token
 client.run('TOKEN')
