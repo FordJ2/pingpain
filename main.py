@@ -15,7 +15,7 @@ intents = discord.Intents().all()
 client = commands.Bot(command_prefix=["p]"], intents=intents)
 pinger = ['hehe', 'muahahahah', 'suffer mortal', 'sue me', '>:D']
 ping_responses = ['stop', 'stap', 'please..', 'really?', 'can you not?', 'bruh wth', 'i will kick you']
-timeout = 10
+timeout = 60*60*1
 
 @client.event
 async def on_ready():
