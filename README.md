@@ -1,7 +1,7 @@
 # pingPAIN
 simple discord bot to ping random people in a set channel
 
-the main command can be triggered by typing `p]plink start` which
+the main command can be triggered by typing `p]plink` which
 triggers a loop that ghost pings random people every hour
 
 link to add to your server:
