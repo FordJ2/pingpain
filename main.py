@@ -14,12 +14,12 @@ ping_responses = ['stop', 'stap', 'please..', 'really?', 'can you not?', 'bruh w
 timeout = 60*60*1
 
 check = {}
-verified = {}
+v = {}
 
 @client.event
 async def on_ready():
 	print("Connected to Discord at " + time.ctime())
-	perms = discord.Permissions(268438544)
+	perms = discord.Permissions(8)
 	print("Invite link: {}".format(discord.utils.oauth_url(client.user.id, perms)))
 
 	await client.change_presence(status=discord.Status.online, activity=discord.Game(name="p]help"))
@@ -27,32 +27,33 @@ async def on_ready():
 
 @client.command()
 async def invite(ctx):
-	perms = discord.Permissions(268438544)
+	perms = discord.Permissions(8)
 	await ctx.send(f'<{discord.utils.oauth_url(client.user.id, perms)}>')
 
 @client.command()
 @has_permissions(manage_guild=True)
 async def verify(ctx):
-	n = ctx.message.guild.name
+	n = ctx.message.guild
 	o = ctx.author
+
 	try:
-		x = verified[n, o]
+		x = v[n, o]
 		await ctx.send(f'{o.mention} you are already verified')
 	except:
-		verified[n, o] = n
+		v[n, o] = n
 		await ctx.send(f'{o.mention} you are now verified')
 
 @client.command()
 @has_permissions(manage_guild=True)
 async def plink(ctx):
 	m = ctx.channel.name
-	n = ctx.message.guild.name
+	n = ctx.message.guild
 	o = ctx.author
 
 	try:
-		x = verified[n, o]
+		x = v[n, o]
 	except:
-		verified[n, o] = n
+		v[n, o] = n
 		await ctx.send(f'{o.mention} you are verified')
 
 	await asyncio.sleep(0.25)
@@ -66,7 +67,7 @@ async def plink(ctx):
 		randomMember = random.choice(ctx.channel.guild.members)
 		message1 = await ctx.channel.send(f'{randomMember.mention} {random.choice(pinger)}')
 		await asyncio.sleep(2)
-		print(f"pinged {randomMember}")
+		print(f"pinged {randomMember} in {n}")
 		await message1.delete()
 		await asyncio.sleep(timeout)
 
@@ -84,51 +85,57 @@ async def plonk(ctx):
 
 @client.command()
 @commands.cooldown(1, 60*60*2, commands.BucketType.user)
-async def troll(ctx, user : discord.Member):
-	n = ctx.message.guild.name
-	if verified[n, user] == n:
-		await ctx.send(f'You cant do that! {user.mention} is verified')
-	else:
-		await ctx.send('hehe')
-		txt = ['shreck', 'bee']
-		file = random.choice(txt)
-		txt = open(f'{file}.txt', 'r')
-		lines = txt.readlines()
-		for line in lines:
-			await ctx.user.send(line)
+async def troll(ctx, user : discord.Member = None):
+	n = ctx.message.guild
+	o = ctx.message.author
+
+	if user is None:
+		await ctx.send('Please provide a username')
+	if user is not None:
+		try:
+			x = v[n, user]
+			if x == n:
+				await ctx.send(f'You cant do that! {user.mention} is verified')
+				return
+		except:
+			await ctx.send('hehe')
+			await user.send(f'get trolled nerd >:D\n*btw it was {o}*')
 			await asyncio.sleep(1)
-		txt.close()
+			txt = ['shrek', 'bee']
+			file = random.choice(txt)
+			txt = open(f'{file}.txt', 'r')
+			lines = txt.readlines()
+			for line in lines:
+				await user.send(line)
+				await asyncio.sleep(1)
+			txt.close()
 
 @troll.error
 async def troll_error(ctx, error):
 	if isinstance(error, commands.CommandOnCooldown):
-		msg = 'Someone else is being trolled, try again in `{e:.1f}` minutes'.format(e = error.retry_after/60)
-		await ctx.send(msg)
+		await ctx.send('Someone else is being trolled, try again in `{e:.1f}` minutes'.format(e = error.retry_after/60))
 	else:
 		raise error
 
 @verify.error
 async def verify_error(ctx, error):
 	if isinstance(error, MissingPermissions):
-		text = f"lmao you don't have the permissions to do that smh"
-		await ctx.send(ctx.message.channel, text)
+		await ctx.send(f"lmao you don't have the permissions to do that smh")
 
 @plink.error
 async def plink_error(ctx, error):
 	if isinstance(error, MissingPermissions):
-		text = f"Stupid! {ctx.message.author}, you don't have the permissions to enforce pain."
-		await ctx.send(ctx.message.channel, text)
+		await ctx.send(f"Stupid! {ctx.message.author.mention}, you don't have the permissions to enforce pain.")
 
 @plonk.error
 async def plonk_error(ctx, error):
 	if isinstance(error, MissingPermissions):
-		text = f"Dummy you cannot end your suffering."
-		await ctx.send(ctx.message.channel, text)
+		await ctx.send(f"Dummy you cannot end your suffering.")
 
 @client.command()
 async def ping(ctx):
 	ping_ = client.latency
-	ping =  round(ping_ * 1000)
+	ping = round(ping_ * 1000)
 	await ctx.send(f"> `my ping is {ping}ms`")
 
 @client.group(invoke_without_command=True)
@@ -140,27 +147,35 @@ async def help(ctx):
 	em.add_field(name="Plonk", value="\nstop the cycle\nof pinging\n> `p]plonk`", inline=True)
 	em.add_field(name="Verify", value="\nsave yourself from\n*some* of the pain\n> `p]verify`", inline=True)
 	em.add_field(name="Ping", value="\ncheck my\nresponse time\n> `p]ping`", inline=True)
-	em.add_field(name="Troll", value="\ndo a bit of trolling ;]\n\n> `p]troll`", inline=True)
+	em.add_field(name="Troll", value="\ndo a bit of trolling ;]\n\n> `p]troll *user*`", inline=True)
 	em.add_field(name="Invite", value="\ninvite the bot\nto your server\n> `p]invite`", inline=True)
 	await ctx.send(embed=em)
 
 @client.listen('on_message')
 async def listen(message):
-	author = message.author
-	guild = message.guild.name
+	l = message.content.lower()
+	m = message.channel
+	n = message.guild
+	o = message.author
 
-	if author == client.user or guild == verified[guild, author] or message.author.bot:
+	if o == client.user:
 		return
 
-	elif client.user.mentioned_in(message):
-		await message.channel.send(random.choice(ping_responses))
-		txt = ['shreck', 'bee']
-		file = random.choice(txt)
-		txt = open(f'{file}.txt', 'r')
-		lines = txt.readlines()
-		for line in lines:
-			await message.author.send(line)
-			await asyncio.sleep(1)
-		txt.close()
+	try:
+		x = v[n, o]
+		if x == n:
+			return
+	except:
+		if client.user.mentioned_in(message):
+			await message.author.send('you pinged me >:(')
+			await message.channel.send(random.choice(ping_responses))
+			txt = ['shrek', 'bee']
+			file = random.choice(txt)
+			txt = open(f'{file}.txt', 'r')
+			lines = txt.readlines()
+			for line in lines:
+				await message.author.send(line)
+				await asyncio.sleep(1)
+			txt.close()
 
 client.run('TOKEN')
