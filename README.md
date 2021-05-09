@@ -6,5 +6,5 @@ triggers a loop that ghost pings random people every hour
 more info can be found by typing `p]help`
 
 link to add to your server:
->https://discord.com/oauth2/authorize?client_id=812489455498821697&scope=bot&permissions=8
+>https://discord.com/oauth2/authorize?client_id=812489455498821697&scope=bot&permissions=268438544
 
