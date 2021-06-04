@@ -209,4 +209,4 @@ async def listen(message):
 	txt2.close()
 
 keep_alive()
-client.run('ODEyNDg5NDU1NDk4ODIxNjk3.YDBfxQ.MjwRezemXZwbCFxYt2bYwZG-gK4')
+client.run('TOKEN')
