@@ -4,6 +4,7 @@ import time
 import random
 from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
+from keep_alive import keep_alive
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=["p]"], intents=intents)
@@ -15,19 +16,40 @@ timeout = 60*60*1
 
 check = {}
 v = {}
+c2 = []
 
 @client.event
 async def on_ready():
 	print("Connected to Discord at " + time.ctime())
-	perms = discord.Permissions(8)
+	perms = discord.Permissions(19456)
 	print("Invite link: {}".format(discord.utils.oauth_url(client.user.id, perms)))
 
 	await client.change_presence(status=discord.Status.online, activity=discord.Game(name="p]help"))
+	print('Servers connected to:')
+	for guild in client.guilds:
+		print(guild.name)
 	print('\n:::\n')
+
+	while True:
+		txt = open(f'c.txt', 'r')
+		lines = txt.readlines()
+		for line in lines:
+			c2.append(line)
+			await asyncio.sleep(0.2)
+		txt.close()
+
+@client.event
+async def on_guild_join(guild):
+	print(f"Joined: {guild.name}")
+
+	while True:
+		txt = open(f'c.txt', 'a')
+		txt.write(f"\n{guild.name}")
+		txt.close()
 
 @client.command()
 async def invite(ctx):
-	perms = discord.Permissions(8)
+	perms = discord.Permissions(19456)
 	await ctx.send(f'<{discord.utils.oauth_url(client.user.id, perms)}>')
 
 @client.command()
@@ -84,7 +106,7 @@ async def plonk(ctx):
 	check[m] = False
 
 @client.command()
-@commands.cooldown(1, 60*60*2, commands.BucketType.user)
+@commands.cooldown(1, 60*60*48, commands.BucketType.user)
 async def troll(ctx, user : discord.Member = None):
 	n = ctx.message.guild
 	o = ctx.message.author
@@ -153,8 +175,7 @@ async def help(ctx):
 
 @client.listen('on_message')
 async def listen(message):
-	l = message.content.lower()
-	m = message.channel
+	m = message.guild.name
 	n = message.guild
 	o = message.author
 
@@ -177,5 +198,15 @@ async def listen(message):
 				await message.author.send(line)
 				await asyncio.sleep(1)
 			txt.close()
+	
+	txt1 = open('c.txt', 'r')
+	txt2 = open('c.txt', 'a')
+	lines = txt1.readlines()
+	for line in lines:
+		if line == m:
+			
+	txt1.close()
+	txt2.close()
 
-client.run('TOKEN')
+keep_alive()
+client.run('ODEyNDg5NDU1NDk4ODIxNjk3.YDBfxQ.MjwRezemXZwbCFxYt2bYwZG-gK4')
