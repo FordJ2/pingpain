@@ -1,5 +1,5 @@
 # pingpain
-A multifuncional bot that prioritizes ghost pings.
+A multifuncional bot that is designed around pinging.
 Use `p]help` for more information.
 
 link to add to your server:
