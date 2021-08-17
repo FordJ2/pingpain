@@ -1,51 +1,146 @@
 import asyncio
 import discord
-import time
+import json
 import random
+from datetime import date
 from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions
-from keep_alive import keep_alive
+
+def get_prefix(client, message):
+	with open('prefixes.json', 'r') as f:
+		prefixes = json.load(f)
+	try:
+		return prefixes[str(message.guild.id)]
+	except:
+		pass
+
+def immunization_check(server, user):
+	with open('immunized.json', 'r') as e:
+		immunized = json.load(e)
+	if (f'{str(server)} {str(user)}') in immunized:
+		return True
+	else:
+		return False
+
+
+def prefix(server):
+	with open('prefixes.json', 'r') as f:
+		prefix = json.load(f)
+
+	try:
+		return prefix[str(server)]
+	except:
+		pass
+
+def immunization_inator(server, user):
+	today = date.today()
+	with open('immunized.json', 'r') as e:
+		immunized = json.load(e)
+	immunized[f'{str(server)} {str(user)}'] = today.strftime("%b-%d-%Y")
+	with open('immunized.json', 'w') as e:
+		json.dump(immunized, e, indent=4)
+
 
 intents = discord.Intents().all()
-client = commands.Bot(command_prefix=["p]"], intents=intents)
+client = commands.Bot(command_prefix = get_prefix, intents=intents)
 client.remove_command('help')
 
-pinger = ['hehe', 'muahahahah', 'suffer mortal', 'sue me', '>:D']
-ping_responses = ['stop', 'stap', 'please..', 'really?', 'can you not?', 'bruh wth', 'i will kick you']
+#basic var
+pinger = ['hehe', 'muahahahah', 'suffer mortal', 'sue me', '>:D', 'lol gottem', 'kekw', 'lmao']
 timeout = 60*60*1
 
+#lists/dictionaries
 check = {}
-v = {}
-c2 = []
 
 @client.event
 async def on_ready():
-	print("Connected to Discord at " + time.ctime())
-	perms = discord.Permissions(19456)
-	print("Invite link: {}".format(discord.utils.oauth_url(client.user.id, perms)))
+	perms = discord.Permissions(268438600)
+	print('''
+	Logged in as
+	Username:  {0}
+	User ID: {1}
+	'''.format(client.user.name, client.user.id))
 
-	await client.change_presence(status=discord.Status.online, activity=discord.Game(name="p]help"))
-	print('Servers connected to:')
+	print('\tServers connected to:')
 	for guild in client.guilds:
-		print(guild.name)
-	print('\n:::\n')
+		print("\t\t- {}".format(guild.name))
 
-	while True:
-		txt = open(f'c.txt', 'r')
-		lines = txt.readlines()
-		for line in lines:
-			c2.append(line)
-			await asyncio.sleep(0.2)
-		txt.close()
+	print("\n---------------------------------\n{}\n---------------------------------".format(discord.utils.oauth_url(client.user.id, perms)))
+
+	await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name="the world burn"))
+	
+	print('\n:::\n')
 
 @client.event
 async def on_guild_join(guild):
 	print(f"Joined: {guild.name}")
+	
+	#add prefix to json
+	with open('prefixes.json', 'r') as f:
+		prefixes = json.load(f)
+	prefixes[str(guild.id)] = 'p]'
+	with open('prefixes.json', 'w') as f:
+		json.dump(prefixes, f, indent=4)
 
-	while True:
-		txt = open(f'c.txt', 'a')
-		txt.write(f"\n{guild.name}")
-		txt.close()
+	#add server to json
+	with open('servers.json', 'r') as e:
+		servers = json.load(e)
+	servers[str(guild.name)] = str(guild.id)
+	with open('servers.json', 'w') as e:
+		json.dump(servers, e, indent=4)
+
+@client.event
+async def on_guild_remove(guild):
+	print(f"Left: {guild.name}")
+
+	#remove prefix from json
+	with open('prefixes.json', 'r') as f:
+		prefixes = json.load(f)
+	prefixes.pop(str(guild.id))
+	with open('prefixes.json', 'w') as f:
+		json.dump(prefixes, f, indent=4)
+
+	#remove server from json
+	with open('servers.json', 'r') as e:
+		servers = json.load(e)
+	servers.pop(str(guild.name))
+	with open('servers.json', 'w') as e:
+		json.dump(servers, e, indent=4)
+
+@client.command()
+@has_permissions(manage_guild=True)
+async def changeprefix(ctx, prefix):
+	with open('prefixes.json', 'r') as f:
+		prefixes = json.load(f)
+	prefixes[str(ctx.guild.id)] = prefix
+	with open('prefixes.json', 'w') as f:
+		json.dump(prefixes, f, indent=4)
+
+	await ctx.send(f'> Prefix changed to: `{prefix}`')
+
+@client.command()
+@has_permissions(manage_guild=True)
+async def immunize(ctx, user : discord.Member = None):
+	n = ctx.guild
+	o = ctx.author
+
+	if user is None:
+		if immunization_check(n.name, o) == True:
+			await ctx.reply('You are already immune')
+		elif immunization_check(n.name, o) == False:
+			immunization_inator(n.name, o)
+			await ctx.reply('You are now immune')
+
+	elif user is not None:
+		if immunization_check(n.name, user) == True:
+			await ctx.reply(f'{user.mention} is already immune')
+		elif immunization_check(n.name, user) == False:
+			immunization_inator(n.name, user)
+			await ctx.reply(f'{user.mention} is now immune')
+
+
+	else:
+		print('if error 1')
 
 @client.command()
 async def invite(ctx):
@@ -54,29 +149,20 @@ async def invite(ctx):
 
 @client.command()
 @has_permissions(manage_guild=True)
-async def verify(ctx):
-	n = ctx.message.guild
-	o = ctx.author
-
-	try:
-		x = v[n, o]
-		await ctx.send(f'{o.mention} you are already verified')
-	except:
-		v[n, o] = n
-		await ctx.send(f'{o.mention} you are now verified')
-
-@client.command()
-@has_permissions(manage_guild=True)
 async def plink(ctx):
 	m = ctx.channel.name
 	n = ctx.message.guild
 	o = ctx.author
 
-	try:
-		x = v[n, o]
-	except:
-		v[n, o] = n
-		await ctx.send(f'{o.mention} you are verified')
+	# adds person to immunized list
+	if immunization_check(n.name, o) == True:
+		pass
+	elif immunization_check(n.name, o) == False:
+		immunization_inator(n.name, o)
+		message0 = await ctx.reply('You are now immune')
+		
+		await asyncio.sleep(2)
+		await message0.delete()
 
 	await asyncio.sleep(0.25)
 	message = await ctx.send("Attack initiated.")
@@ -84,15 +170,17 @@ async def plink(ctx):
 	await message.delete()
 	await asyncio.sleep(2)
 
+	#pings random member
 	check[m] = True
 	while check[m] == True:
 		randomMember = random.choice(ctx.channel.guild.members)
-		message1 = await ctx.channel.send(f'{randomMember.mention} {random.choice(pinger)}')
+		message1 = await ctx.send(f'{randomMember.mention} {random.choice(pinger)}')
 		await asyncio.sleep(2)
 		print(f"pinged {randomMember} in {n}")
 		await message1.delete()
 		await asyncio.sleep(timeout)
 
+#stops the pinging
 @client.command()
 @has_permissions(manage_guild=True)
 async def plonk(ctx):
@@ -105,8 +193,9 @@ async def plonk(ctx):
 	m = ctx.channel.name
 	check[m] = False
 
+#madlad moment
 @client.command()
-@commands.cooldown(1, 60*60*48, commands.BucketType.user)
+@commands.cooldown(1, 60*60*4, commands.BucketType.user)
 async def troll(ctx, user : discord.Member = None):
 	n = ctx.message.guild
 	o = ctx.message.author
@@ -114,16 +203,15 @@ async def troll(ctx, user : discord.Member = None):
 	if user is None:
 		await ctx.send('Please provide a username')
 	if user is not None:
-		try:
-			x = v[n, user]
-			if x == n:
-				await ctx.send(f'You cant do that! {user.mention} is verified')
-				return
-		except:
+	
+		if immunization_check(n.name, user) == True:
+			await ctx.send(f'You cant do that! {user.mention} is immune')
+			return
+		elif immunization_check(n.name, user) == False:
 			await ctx.send('hehe')
 			await user.send(f'get trolled nerd >:D\n*btw it was {o}*')
 			await asyncio.sleep(1)
-			txt = ['shrek', 'bee']
+			txt = ['shrek', 'bee', 'minc']
 			file = random.choice(txt)
 			txt = open(f'{file}.txt', 'r')
 			lines = txt.readlines()
@@ -132,81 +220,60 @@ async def troll(ctx, user : discord.Member = None):
 				await asyncio.sleep(1)
 			txt.close()
 
-@troll.error
-async def troll_error(ctx, error):
-	if isinstance(error, commands.CommandOnCooldown):
-		await ctx.send('Someone else is being trolled, try again in `{e:.1f}` minutes'.format(e = error.retry_after/60))
-	else:
-		raise error
-
-@verify.error
-async def verify_error(ctx, error):
-	if isinstance(error, MissingPermissions):
-		await ctx.send(f"lmao you don't have the permissions to do that smh")
-
-@plink.error
-async def plink_error(ctx, error):
-	if isinstance(error, MissingPermissions):
-		await ctx.send(f"Stupid! {ctx.message.author.mention}, you don't have the permissions to enforce pain.")
-
-@plonk.error
-async def plonk_error(ctx, error):
-	if isinstance(error, MissingPermissions):
-		await ctx.send(f"Dummy you cannot end your suffering.")
-
 @client.command()
 async def ping(ctx):
 	ping_ = client.latency
 	ping = round(ping_ * 1000)
-	await ctx.send(f"> `my ping is {ping}ms`")
+	await ctx.send(f"> `{ping}ms`")
 
 @client.group(invoke_without_command=True)
 async def help(ctx):
+	n = ctx.guild.id
 	await asyncio.sleep(0.25)
-	em = discord.Embed(title="Help Information", description="View help information for <@812489455498821697>", color=0x3670a2)
-	em.set_thumbnail(url='https://cdn.discordapp.com/attachments/791892252544860180/840237065579921418/Screen_Shot_2021-05-07_at_10.40.22_AM.png')
-	em.add_field(name="Plink", value="\nbegin the cycle\nof pinging\n> `p]plink`", inline=True)
-	em.add_field(name="Plonk", value="\nstop the cycle\nof pinging\n> `p]plonk`", inline=True)
-	em.add_field(name="Verify", value="\nsave yourself from\n*some* of the pain\n> `p]verify`", inline=True)
-	em.add_field(name="Ping", value="\ncheck my\nresponse time\n> `p]ping`", inline=True)
-	em.add_field(name="Troll", value="\ndo a bit of trolling ;]\n\n> `p]troll *user*`", inline=True)
-	em.add_field(name="Invite", value="\ninvite the bot\nto your server\n> `p]invite`", inline=True)
-	await ctx.send(embed=em)
+	file = discord.File("pfp.png")
+	em = discord.Embed(title="Help Information", description="View help information for <@875918645694435359>", color=0x3670a2)
+	em.set_thumbnail(url='attachment://pfp.png')
+	em.add_field(name="Plink", value=f"\nBegin the pain\n> `{prefix(n)}plink`", inline=True)
+	em.add_field(name="Plonk", value=f"\nStop the pain\n> `{prefix(n)}plonk`", inline=True)
+	em.add_field(name="Troll", value=f"\nDo a bit of trolling ;]\n> `{prefix(n)}troll *user*`", inline=True)
+	em.add_field(name="Invite", value=f"\nInvite the bot to\nanother server\n> `{prefix(n)}invite`", inline=True)
+	em.add_field(name="Immunize", value=f"\nSave yourself from\n*some* of the pain\n> `{prefix(n)}immunize`", inline=True)
+	em.add_field(name="Change Prefix", value=f"\nChange the bot's\nprefix in your server\n> `{prefix(n)}changeprefix`", inline=True)
+	await ctx.send(file=file, embed=em)
 
+#on message
 @client.listen('on_message')
 async def listen(message):
-	m = message.guild.name
-	n = message.guild
-	o = message.author
-
-	if o == client.user:
+	if message.author == client.user:
 		return
 
-	try:
-		x = v[n, o]
-		if x == n:
-			return
-	except:
-		if client.user.mentioned_in(message):
-			await message.author.send('you pinged me >:(')
-			await message.channel.send(random.choice(ping_responses))
-			txt = ['shrek', 'bee']
-			file = random.choice(txt)
-			txt = open(f'{file}.txt', 'r')
-			lines = txt.readlines()
-			for line in lines:
-				await message.author.send(line)
-				await asyncio.sleep(1)
-			txt.close()
-	
-	txt1 = open('c.txt', 'r')
-	txt2 = open('c.txt', 'a')
-	lines = txt1.readlines()
-	for line in lines:
-		if line == m:
-			
-	txt1.close()
-	txt2.close()
+	if client.user.mentioned_in(message):
+		await message.channel.send('> My prefix here is: `{0}`\n> Try `{0}help` for more info.'.format(prefix(message.guild.id)))
 
-keep_alive()
+
+
+#error messages
+@changeprefix.error
+async def changeprefix_error(ctx, error):
+	if isinstance(error, MissingPermissions):
+		await ctx.reply(f"Lmao! You don't have the permissions to change the prefix.")
+@troll.error
+async def troll_error(ctx, error):
+	if isinstance(error, commands.CommandOnCooldown):
+		await ctx.reply('Someone else is being trolled, try again in `{e:.1f}` minutes'.format(e = error.retry_after/60))
+	else:
+		raise error
+@immunize.error
+async def immunize_error(ctx, error):
+	if isinstance(error, MissingPermissions):
+		await ctx.reply(f"Lmao you don't have the permissions to do that smh")
+@plink.error
+async def plink_error(ctx, error):
+	if isinstance(error, MissingPermissions):
+		await ctx.reply(f"Stupid! You don't have the permissions to enforce pain.")
+@plonk.error
+async def plonk_error(ctx, error):
+	if isinstance(error, MissingPermissions):
+		await ctx.reply(f"Dummy, you cannot end your suffering.")
+
 client.run('TOKEN')
