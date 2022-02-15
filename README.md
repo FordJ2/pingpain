@@ -1,4 +1,4 @@
-this project has been taken offline
+this project has been taken offline for public use, but 'TOKEN' of line 270 of `main.py` can be edited to include your own bot's token
 
 # pingpain
 
@@ -8,6 +8,4 @@ Taking advantage of Discord's API and json files, ***pingpain*** brings a new me
 Use `p]help` for more information.
 
 
-link to add to your server:
->https://discord.com/oauth2/authorize?client_id=875918645694435359&scope=bot&permissions=268438600
 
